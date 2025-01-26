@@ -1,21 +1,31 @@
 <?php
-$host = 'localhost';
-$dbname = 'auto_accept_taxi';
-$username = 'root';  // Sesuaikan dengan user MySQL Anda
-$password = '';      // Sesuaikan dengan password MySQL Anda
+$host = 'sql12.freesqldatabase.com';
+$dbname = 'sql12759703';
+$username = 'sql12759703';  // Sesuaikan dengan user MySQL Anda
+$password = 'wWKg6dZkMJ';      // Sesuaikan dengan password MySQL Anda
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Fungsi untuk generate kode unik
-    function generateUniqueCode($length = 8) {
-        return strtoupper(bin2hex(random_bytes($length / 2)));
+    // Fungsi untuk generate kode unik yang mudah diingat
+    function generatePrettyCode() {
+        $patterns = [
+            '123', '456', '789', '101', '202', '303', '909', '121',
+            'ABC', 'DEF', 'XYZ', 'QWE', 'JKL', 'MNO', 'PQR'
+        ];
+        
+        // Kombinasi angka dan huruf dengan pola mudah diingat
+        $numberPart = $patterns[array_rand($patterns)] . $patterns[array_rand($patterns)];
+        return strtoupper($numberPart);
     }
+
+    // Hapus kode yang sudah expired saat halaman diakses
+    $pdo->exec("DELETE FROM unique_codes WHERE expired_at < NOW()");
 
     // Menyimpan kode unik ke dalam database dengan durasi tertentu
     if (isset($_POST['generate_code'])) {
-        $uniqueCode = generateUniqueCode(10);
+        $uniqueCode = generatePrettyCode();
         $duration = (int) $_POST['duration'];  // Ambil durasi dalam minggu dari input form
         $expiryDate = date('Y-m-d H:i:s', strtotime("+$duration weeks"));
 
